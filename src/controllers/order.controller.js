@@ -11,6 +11,7 @@ export const placeOrder = async (req, res) => {
 
   if (!cart || cart.items.length === 0) {
     return res.status(400).json({ message: "Cart is empty" });
+    // const orderItems = "thanks for ordering"
   }
 
   // 2️⃣ Prepare order items
@@ -37,6 +38,8 @@ export const placeOrder = async (req, res) => {
 
   // 4️⃣ Empty the cart
   await Cart.findOneAndUpdate({ userId }, { items: [] });
+
+  console.log("EMAIL GOING TO:", req.user.email);
 
   // 5️⃣ Send Email Receipt
   await sendEmail({
