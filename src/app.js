@@ -1,7 +1,19 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 
+import cors from "cors"; // <--- IMPORT THIS
+
 const app = express();
+
+// --- ADD THIS BLOCK ---
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Allow your React frontend
+    credentials: true, // Allow cookies to be sent
+  })
+);
+
+// const app = express();
 
 app.use(express.json()); //enable backend to receive json files
 app.use(cookieParser());
@@ -12,18 +24,11 @@ import userRoutes from "./routes/user.routes.js";
 import cartRouter from "./routes/cart.routes.js";
 import productRouter from "./routes/product.routes.js";
 import orderRouter from "./routes/order.routes.js";
-// import videoRouter from "./routes/video.routes.js";
-// import commentRoutes from "./routes/comment.routes.js";
-// import likeRoutes from "./routes/like.routes.js";
-
 // routes declaration
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/product", productRouter);
 app.use("/api/v1/order", orderRouter);
-// app.use("/api/v1/video", videoRouter);
-// app.use("/api/v1/comment", commentRoutes);
-// app.use("/api/v1/like", likeRoutes);
 
 // Global error handler should be the last middleware to catch errors
 app.use((error, req, res, next) => {
