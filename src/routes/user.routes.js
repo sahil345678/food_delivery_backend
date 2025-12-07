@@ -1,7 +1,7 @@
 import express from "express";
 import {
   // getCurrentUser,
-  // loginUser,
+  loginUser,
   // logoutUser,
   // refreshAccessToken,
   registerUser,
@@ -12,7 +12,7 @@ const userRoutes = express.Router();
 
 userRoutes.route("/register").post(registerUser);
 
-// userRoutes.route("/login").post(loginUser);
+userRoutes.route("/login").post(loginUser);
 
 // // secured routes
 // userRoutes.route("/logout").post(verifyJWT, logoutUser);

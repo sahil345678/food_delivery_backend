@@ -4,19 +4,19 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 
 //-----------------------------------------------access and refresh token---------------------------------
-// const generateAccessAndRefereshTokens = async (userId, next) => {
-//   try {
-//     const user = await User.findById(userId);
-//     const accessToken = user.generateAccessToken();
-//     const refreshToken = user.generateRefreshToken();
+const generateAccessAndRefereshTokens = async (userId, next) => {
+  try {
+    const user = await User.findById(userId);
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
 
-//     user.refreshToken = refreshToken;
-//     await user.save({ validateBeforeSave: false });
-//     return { accessToken, refreshToken };
-//   } catch (error) {
-//     next(new ApiError(500, "error generating accessToken"));
-//   }
-// };
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+    return { accessToken, refreshToken };
+  } catch (error) {
+    next(new ApiError(500, "error generating accessToken"));
+  }
+};
 // const generateAccessAndRefereshTokens = async (userId) => {
 //   try {
 //     const user = await User.findById(userId);
@@ -77,7 +77,46 @@ const registerUser = asyncHandler(async (req, res, next) => {
   });
 });
 
-export {
-  registerUser,
-  // loginUser,
-};
+// --------------------------------------------login user controller---------------------------------------
+const loginUser = asyncHandler(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  // console.log(req.body);
+
+  if ([email, password].some((i) => i?.trim === ""))
+    return next(new ApiError(400, "All field are required."));
+
+  const user = await User.findOne({ email });
+
+  if (!user) return next(new ApiError(404, "user not found, please register."));
+
+  const isPasswordCorrect = await user.isPasswordCorrect(password);
+
+  if (!isPasswordCorrect)
+    return next(new ApiError(400, "Invalid credentials."));
+
+  const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
+    user._id
+  );
+
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -accessToken -refreshToken"
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json({
+      success: true,
+      message: "login successfull.",
+      loggedInUser,
+    });
+});
+
+export { registerUser, loginUser };
